@@ -28,29 +28,63 @@ It integrates **real-time APIs, machine learning, Docker-based deployment, dashb
 
 ```
 urban-air-quality-ai-agent/
-│
+├── .env
+├── .gitignore
 ├── README.md
 ├── requirements.txt
-├── .env
 ├── docker-compose.yml
-├── .gitignore
-│
+├── config/                          (empty)
+├── dahboard/
+│   └── app.py
 ├── data/
-│   ├── raw/                  # Unprocessed data from APIs/sensors
-│   ├── processed/            # Cleaned and transformed datasets
-│   ├── external/             # External datasets (CSV/AQI data)
-│
-├── notebooks/                # Jupyter notebooks for EDA, ML, testing
-│
+│   ├── external/                    (empty)
+│   ├── processed/                   (empty)
+│   └── raw/                         (empty)
+├── deployment/                      (empty)
+├── frontend/
+│   ├── package.json
+│   ├── public/
+│   │   └── index.html
+│   └── src/
+│       ├── App.js
+│       └── index.js
+├── infra/
+│   ├── airflow/
+│   │   ├── airflow.cfg
+│   │   ├── Dockerfile
+│   │   ├── dags/
+│   │   │   └── ingestion_dag.py
+│   │   └── plugins/                 (empty)
+│   ├── kafka/
+│   │   ├── Dockerfile
+│   │   └── server.properties
+│   └── spark/
+│       ├── Dockerfile
+│       └── spark-defaults.conf
+├── notebooks/
+│   ├── eda.ipynb
+│   └── model_experiments.ipynb
 ├── src/
-│   ├── data_collection/      # Scripts for API calls & data ingestion
-│   ├── data_processing/      # Cleaning, transforming, feature engineering
-│   ├── model/                # Training, saving, and loading ML models
-│   ├── dashboard/            # Streamlit dashboard UI
-│   ├── alerts/               # Email/SMS alerts on thresholds
-│   ├── utils/                # Helper functions & shared utilities
-│
-└── tests/                    # Unit tests for each module
+│   ├── agent/
+│   │   ├── agent.py
+│   │   ├── prompt_template.txt
+│   │   └── utils.py
+│   ├── api/
+│   │   ├── main.py
+│   │   └── routes/
+│   │       ├── aqi.py
+│   │       └── insights.py
+│   ├── database/
+│   │   ├── db_connector.py
+│   │   └── models.py
+│   ├── ingestion/
+│   │   ├── aqi_producer.py
+│   │   └── consumer_to_postgres.py
+│   ├── models/                      (empty)
+│   ├── processing/
+│   │   └── correlation_job.py
+│   └── utils/                       (empty)
+└── tests/                           (empty)
 ```
 
 ---
