@@ -1,0 +1,40 @@
+# Core Dependencies
+python-dotenv==1.0.0
+
+# Data Engineering
+kafka-python==2.0.2
+pyspark==3.5.0
+apache-airflow==2.9.0
+
+# Database
+psycopg2-binary==2.9.9
+SQLAlchemy==2.0.23
+
+# API
+fastapi==0.109.0
+uvicorn==0.27.0
+pydantic==2.5.3
+python-multipart==0.0.6
+
+# Data Processing
+pandas==2.1.4
+numpy==1.26.2
+
+# HTTP Requests
+requests==2.31.0
+httpx==0.26.0
+
+# AI & LLM
+langchain==0.1.0
+langchain-openai==0.0.2
+openai==1.6.1
+
+# Visualization
+streamlit==1.29.0
+plotly==5.18.0
+matplotlib==3.8.2
+seaborn==0.13.0
+
+# Utilities
+pytz==2023.3
+python-dateutil==2.8.2
