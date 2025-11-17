@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from database.db_connection import get_db, init_db, test_connection
+from database.db_connector import get_db, init_db, test_connection
 from database.models import AQIData, WeatherData, TrafficData, CorrelationAnalysis, AIAgentQuery
 
 # Load environment variables

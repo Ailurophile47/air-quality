@@ -8,7 +8,7 @@ const App = () => {
   const [selectedCity, setSelectedCity] = useState('all');
   const [refreshInterval, setRefreshInterval] = useState(300000); // 5 minutes
   const [alerts, setAlerts] = useState([]);
-  const [chartData, setChartData] = useState([]);
+  // Removed unused chartData
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
@@ -17,10 +17,10 @@ const App = () => {
     try {
       setLoading(true);
       setError(null);
-
-      const endpoint = selectedCity === 'all' 
-        ? `${API_BASE_URL}/api/aqi/current` 
-        : `${API_BASE_URL}/api/aqi/city/${selectedCity}`;
+      // Use API routes implemented in FastAPI
+      const endpoint = selectedCity === 'all'
+        ? `${API_BASE_URL}/aqi/latest?limit=50`
+        : `${API_BASE_URL}/aqi/location/${selectedCity}?hours=24`;
 
       const response = await fetch(endpoint, {
         method: 'GET',
@@ -34,24 +34,49 @@ const App = () => {
       }
 
       const result = await response.json();
-      setData(result);
-      
-      // Update chart data
-      if (result.data && Array.isArray(result.data)) {
-        setChartData(result.data);
+
+      // Normalize API responses so the UI expects `{ data: [ { city, aqi, pm25, temperature, humidity, wind_speed } ] }`
+      let normalized = [];
+
+      if (selectedCity === 'all') {
+        // /aqi/latest returns { count, data: [ { location, aqi, pm25, ... } ] }
+        if (result.data && Array.isArray(result.data)) {
+          normalized = result.data.map(r => ({
+            city: r.location || r.city || 'unknown',
+            aqi: r.aqi ?? null,
+            pm25: r.pm25 ?? null,
+            temperature: r.temperature ?? null,
+            humidity: r.humidity ?? null,
+            wind_speed: r.wind_speed ?? null,
+            timestamp: r.timestamp ?? null
+          }));
+        }
+      } else {
+        // /aqi/location/{location} returns { location, period_hours, count, data: [ { aqi, pm25, timestamp } ] }
+        if (result.data && Array.isArray(result.data)) {
+          normalized = result.data.map(r => ({
+            city: result.location || selectedCity,
+            aqi: r.aqi ?? null,
+            pm25: r.pm25 ?? null,
+            temperature: null,
+            humidity: null,
+            wind_speed: null,
+            timestamp: r.timestamp ?? null
+          }));
+        }
       }
 
-      // Check for alerts
-      if (result.alerts) {
-        setAlerts(result.alerts);
-      }
+      setData({ count: normalized.length, data: normalized, raw: result });
+
+      // No standardized alerts in current API; clear or set if present
+      setAlerts(result.alerts || []);
     } catch (err) {
       console.error('Error fetching data:', err);
       setError(err.message || 'Failed to fetch air quality data');
     } finally {
       setLoading(false);
     }
-  }, [selectedCity]);
+  }, [selectedCity, API_BASE_URL]);
 
   // Fetch AI insights
   const fetchInsights = useCallback(async () => {
@@ -72,7 +97,7 @@ const App = () => {
       console.error('Error fetching insights:', err);
       return null;
     }
-  }, []);
+  }, [API_BASE_URL]);
 
   // Set up auto-refresh
   useEffect(() => {

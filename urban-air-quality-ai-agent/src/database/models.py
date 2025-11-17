@@ -10,7 +10,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from .db_connection import Base
+from .db_connector import Base
 
 
 class AQIData(Base):

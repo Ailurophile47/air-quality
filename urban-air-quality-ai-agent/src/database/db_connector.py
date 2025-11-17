@@ -17,9 +17,11 @@ from sqlalchemy.pool import QueuePool
 load_dotenv()
 
 # Database configuration
+password = os.getenv('POSTGRES_PASSWORD', '')
+password_part = f":{password}@" if password else "@"
 DATABASE_URL = (
-    f"postgresql://{os.getenv('POSTGRES_USER', 'airquality')}:"
-    f"{os.getenv('POSTGRES_PASSWORD', 'postgres123')}@"
+    f"postgresql://{os.getenv('POSTGRES_USER', 'airquality')}"
+    f"{password_part}"
     f"{os.getenv('POSTGRES_HOST', 'localhost')}:"
     f"{os.getenv('POSTGRES_PORT', '5432')}/"
     f"{os.getenv('POSTGRES_DB', 'urban_air_quality')}"
