@@ -17,8 +17,8 @@ from dotenv import load_dotenv
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from database.db_connection import get_db_session
-from database.models import AQIData, WeatherData, TrafficData
+from src.database.db_connection import get_db_session
+from src.database.models import AQIData, WeatherData, TrafficData
 
 # Load environment variables
 load_dotenv()
@@ -257,7 +257,7 @@ class DataConsumer:
 def main():
     """Main entry point for the consumer"""
     # Initialize database tables if not exists
-    from database.db_connection import init_db, test_connection
+    from src.database.db_connection import init_db, test_connection
     
     print("🔧 Checking database connection...")
     if test_connection():
