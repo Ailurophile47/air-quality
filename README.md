@@ -1,51 +1,38 @@
-air-quality/
-│
-├── docker-compose.yml
-├── .env
+air quality/
 ├── .dockerignore
+├── .env
+├── docker-compose.yml
 │
-├── services/
-│   │
-│   ├── api_service/
-│   │   ├── Dockerfile
-│   │   ├── requirements.txt
-│   │   └── app/
-│   │       ├── main.py
-│   │       ├── database.py
-│   │       ├── models.py
-│   │       ├── schemas.py
-│   │       ├── routes/
-│   │       │   ├── aqi.py
-│   │       │   ├── weather.py
-│   │       │   └── health.py
-│   │       └── middleware/
-│   │
-│   ├── ingestion_service/
-│   │   ├── Dockerfile
-│   │   ├── requirements.txt
-│   │   └── app/
-│   │       ├── main.py
-│   │       ├── config.py
-│   │       ├── aqi_client.py
-│   │       ├── weather_client.py
-│   │       ├── transformer.py
-│   │       └── loader.py
-│   │
-│   ├── airflow/
-│   │   ├── Dockerfile
-│   │   └── dags/
-│   │
-│   ├── spark/
-│   │   ├── Dockerfile
-│   │   └── jobs/
-│   │
-│   └── streaming/
-│       ├── producer/
-│       ├── consumer/
-│       └── schemas/
+├── infrastructure/
+│   ├── kakfa/
+│   └── postgres/
+│       ├── init.sql
+│       └── roles.sql
 │
-└── infrastructure/
-    ├── postgres/
-    │   ├── init.sql
-    │   └── roles.sql
-    └── kafka/
+└── services/
+    ├── api_service/
+    │   ├── Dockerfile
+    │   ├── requirements.txt
+    │   └── app/
+    │       ├── __init__.py
+    │       ├── database.py
+    │       ├── main.py
+    │       ├── middleware/
+    │       └── routes/
+    │           ├── __init__.py
+    │           ├── aqi.py
+    │           ├── health.py
+    │           └── weather.py
+    │
+    └── ingestion_service/
+        ├── Dockerfile
+        ├── requirements.txt
+        └── app/
+            ├── __init__.py
+            ├── aqi_client.py
+            ├── config.py
+            ├── loader.py
+            ├── location_service.py
+            ├── main.py
+            ├── transformer.py
+            └── weather_client.py
