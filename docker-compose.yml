@@ -1,0 +1,91 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: air_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: airuser
+      POSTGRES_PASSWORD: airpass
+      POSTGRES_DB: airquality
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - air_network
+
+  api_service:
+    build: ./services/api_service
+    container_name: air_api
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    networks:
+      - air_network
+
+  ingestion_service:
+    build: ./services/ingestion_service
+    container_name: air_ingestion
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    networks:
+      - air_network
+
+  airflow-webserver:
+    build:
+      context: ./services/airflow
+    container_name: airflow_webserver
+    restart: always
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__FERNET_KEY: ${FERNET_KEY}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@air_postgres:5432/airflow
+    volumes:
+      - ./services/airflow/dags:/opt/airflow/dags
+      - ./services/airflow/logs:/opt/airflow/logs
+    ports:
+      - "8080:8080"
+    command: webserver
+    networks:
+      - air_network
+
+  airflow-scheduler:
+    build: ./services/airflow
+    container_name: airflow_scheduler
+    restart: always
+    depends_on:
+      - airflow-webserver
+    env_file:
+      - .env
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@air_postgres:5432/airflow
+    volumes:
+      - ./services/airflow/dags:/opt/airflow/dags
+      - ./services/airflow/logs:/opt/airflow/logs
+    command: scheduler
+    networks:
+      - air_network
+
+volumes:
+  postgres_data:
+
+networks:
+  air_network:
+    driver: bridge

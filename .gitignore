@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+
+# Airflow
+logs/
+airflow.db
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+
+# Virtual env
+venv/
