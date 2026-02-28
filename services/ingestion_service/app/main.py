@@ -1,13 +1,11 @@
 import logging
-from config import AQI_API_KEY, WEATHER_API_KEY
+from config import AQI_API_KEY, WEATHER_API_KEY, CITY
 from aqi_client import fetch_aqi
 from weather_client import fetch_weather
 from transformer import transform_aqi, transform_weather
 from loader import insert_raw, insert_structured_aqi
 
 from location_service import get_or_create_location
-
-CITY = "Bangalore"
 
 location_id = get_or_create_location(
     city=CITY,
@@ -40,3 +38,8 @@ def run():
 
 if __name__ == "__main__":
     run()
+
+from producer import run_producer
+
+if __name__ == "__main__":
+    run_producer()    

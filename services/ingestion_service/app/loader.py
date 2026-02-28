@@ -1,9 +1,16 @@
 import psycopg
 import json
 from config import POSTGRES_CONFIG
+import time
 
 def get_connection():
-    return psycopg.connect(**POSTGRES_CONFIG)
+    for i in range(10):
+        try:
+            return psycopg.connect(**POSTGRES_CONFIG)
+        except psycopg.OperationalError:
+            print("Waiting for Postgres...")
+            time.sleep(3)
+    raise Exception("Could not connect to Postgres after retries")
 
 def insert_raw(table, location_id, payload):
     with get_connection() as conn:

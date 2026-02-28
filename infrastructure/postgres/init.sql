@@ -63,12 +63,3 @@ ALTER TABLE weather_measurements
 ADD CONSTRAINT unique_weather_record
 UNIQUE (location_id, recorded_at);
 
-CREATE DATABASE airflow;
-CREATE USER airflow WITH PASSWORD 'airflow';
-GRANT ALL PRIVILEGES ON DATABASE airflow TO airflow;
-
-\connect airflow
-
-GRANT ALL ON SCHEMA public TO airflow;
-ALTER SCHEMA public OWNER TO airflow;
-ALTER ROLE airflow SET search_path TO public;
