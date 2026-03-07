@@ -1,266 +1,462 @@
+Below is a **clean, professional, copy-paste ready `README.md`** tailored to **your exact project structure and services**.
+It emphasizes **objectives, architecture, setup, services, and pipeline flow**, which recruiters usually look for in **data engineering portfolios**.
+
+You can **paste this directly into `README.md`**.
+
+---
+
 # Urban Air Quality Intelligence Platform
 
-End-to-end data platform for urban air quality monitoring, analytics, and AQI forecasting.
+A **production-style end-to-end data engineering platform** that collects, processes, stores, and analyzes **urban air quality data** using modern data infrastructure.
 
-This project includes:
-- Real-time and batch ingestion (AQI, weather, traffic)
-- Kafka pipeline + PostgreSQL storage
-- Hourly/daily aggregations with anomaly and correlation analytics
-- ML model training + prediction (Ridge Regression)
-- Airflow orchestration (scheduled + one-click manual DAG)
-- Modern React dashboard for visualization
+The system integrates **air quality, weather, and traffic data**, processes it through a **streaming data pipeline**, stores it in **PostgreSQL**, and exposes it through **REST APIs and a real-time dashboard**.
+
+The platform also includes a **machine learning component** for **AQI prediction** and **Airflow-based orchestration** for automated pipelines.
 
 ---
 
-## Architecture
+# Project Objectives
 
-Data flow:
-1. Ingestion service collects AQI/weather/traffic data
-2. Kafka consumer persists stream data to PostgreSQL
-3. Aggregation job computes hourly and daily metrics
-4. ML service trains model and writes predictions
-5. API service serves data to the React dashboard
-6. Airflow orchestrates full pipeline and retention jobs
+The goal of this project is to simulate a **real-world urban environmental intelligence system**.
 
-Core technologies:
-- Python (FastAPI, psycopg, pandas, scikit-learn)
-- React + Vite + Tailwind + Recharts
-- PostgreSQL 15
-- Kafka + Zookeeper
-- Apache Airflow
-- Docker Compose
+Main objectives:
 
----
+* Build a **complete data engineering pipeline**
+* Ingest environmental data from multiple sources
+* Process and transform data using **streaming architecture**
+* Store processed data in a **relational database**
+* Serve analytics through a **REST API**
+* Provide a **dashboard for visualization**
+* Implement **ML-based AQI prediction**
+* Orchestrate pipelines using **Apache Airflow**
+* Deploy the system using **Docker microservices**
 
-## Services and URLs
+This project demonstrates practical experience with:
 
-| Service | Port | URL |
-|---|---:|---|
-| React Dashboard | 3000 | http://localhost:3000 |
-| API Service (FastAPI) | 8000 | http://localhost:8000 |
-| Ingestion Service | 5050 | http://localhost:5050 |
-| ML Service | 5051 | http://localhost:5051 |
-| Airflow UI | 8080 | http://localhost:8080 |
-| PostgreSQL | 5432 | localhost:5432 |
-| Kafka Broker | 9092 | localhost:9092 |
+* Data pipelines
+* Streaming architectures
+* Distributed systems
+* API services
+* Infrastructure orchestration
+* ML integration into data platforms
 
 ---
 
-## Repository Structure
+# System Architecture
 
-```text
-air quality/
+The platform follows a **microservices-based data architecture**.
+
+```
+External APIs
+   │
+   │
+   ▼
+Ingestion Service
+(AQI + Weather + Traffic)
+   │
+   │
+   ▼
+Kafka Event Stream
+   │
+   │
+   ▼
+Kafka Consumer
+(Data Processing + Validation)
+   │
+   │
+   ▼
+PostgreSQL Database
+   │
+   │
+   ├── API Service (FastAPI)
+   │       │
+   │       └── Frontend Dashboard
+   │
+   └── ML Service
+           │
+           └── AQI Prediction
+
+Airflow DAGs orchestrate the pipeline.
+```
+
+---
+
+# Tech Stack
+
+| Layer            | Technology              |
+| ---------------- | ----------------------- |
+| Language         | Python                  |
+| Streaming        | Kafka                   |
+| Database         | PostgreSQL              |
+| Orchestration    | Apache Airflow          |
+| Backend API      | FastAPI                 |
+| Frontend         | React + Vite + Tailwind |
+| Containerization | Docker                  |
+| Machine Learning | Scikit-learn            |
+| Messaging        | Kafka Producer/Consumer |
+
+---
+
+# Project Structure
+
+```
+air-quality/
+│
 ├── docker-compose.yml
-├── README.md
-├── infrastructure/
-│   └── postgres/
+├── .env
+│
+├── infrastructure
+│   ├── kafka
+│   └── postgres
 │       ├── init.sql
 │       ├── roles.sql
-│       └── migrations/
-│           └── 001_traffic_and_phase4_tables.sql
-└── services/
-        ├── airflow/
-        │   └── dags/
-        │       ├── urban_air_quality_hourly.py
-        │       └── model_training_manual.py
-        ├── api_service/
-        ├── frontend/
-        ├── ingestion_service/
-        ├── kafka_consumer/
-        └── ml_service/
+│       └── migrations
+│
+├── services
+│
+│   ├── ingestion_service
+│   │   ├── aqi_client.py
+│   │   ├── weather_client.py
+│   │   ├── traffic_ingestion.py
+│   │   ├── producer.py
+│   │   ├── transformer.py
+│   │   ├── aggregation.py
+│   │   └── batch_ingestion.py
+│
+│   ├── kafka_consumer
+│   │   ├── consumer.py
+│   │   └── database.py
+│
+│   ├── api_service
+│   │   └── app
+│   │       ├── main.py
+│   │       ├── database.py
+│   │       └── routes
+│   │           ├── aqi.py
+│   │           ├── weather.py
+│   │           ├── dashboard.py
+│   │           └── health.py
+│
+│   ├── airflow
+│   │   └── dags
+│   │       ├── urban_air_quality_hourly.py
+│   │       └── model_training_manual.py
+│
+│   ├── ml_service
+│   │   ├── train.py
+│   │   ├── predict.py
+│   │   └── feature_engineering.py
+│
+│   └── frontend
+│       └── React dashboard
 ```
 
 ---
 
-## Quick Start
+# Core Services
 
-### 1) Prerequisites
-- Docker Desktop (running)
-- Git
-- Windows PowerShell (commands below are PowerShell-friendly)
+## Ingestion Service
 
-### 2) Start the platform
+Responsible for collecting environmental data.
 
-```bash
-docker-compose up -d --build
-```
+Data sources include:
 
-### 3) Verify containers
+* Air Quality API
+* Weather API
+* Traffic data
 
-```bash
-docker ps
-```
+Key responsibilities:
 
-### 4) Open applications
-- Dashboard: http://localhost:3000
-- Airflow: http://localhost:8080
+* Fetch raw environmental data
+* Normalize the data format
+* Transform data into unified schema
+* Publish events to **Kafka topics**
 
----
+Main modules:
 
-## One-Click ML Workflow (Recommended)
-
-Use Airflow DAG `model_training_manual` for complete ML flow:
-
-Flow:
-`Seed -> Aggregate -> Train -> Predict`
-
-Steps:
-1. Open Airflow UI http://localhost:8080
-2. Find DAG: `model_training_manual`
-3. Click **Trigger DAG**
-4. Wait for all tasks to become green
-5. Open dashboard to view predictions
+* `aqi_client.py`
+* `weather_client.py`
+* `traffic_ingestion.py`
+* `producer.py`
+* `transformer.py`
 
 ---
 
-## Manual API Workflow
+# Kafka Consumer Service
 
-PowerShell users should use `curl.exe` (not `curl`).
+Consumes messages from Kafka and writes processed data to the database.
 
-### Seed deterministic dummy data
-```bash
-curl.exe -X POST "http://localhost:5050/seed"
+Responsibilities:
+
+* Subscribe to Kafka topics
+* Validate event data
+* Transform messages
+* Store results in PostgreSQL
+
+Main file:
+
 ```
-
-### Train model
-```bash
-curl.exe -X POST "http://localhost:5051/train?location_id=1&days=7"
-```
-
-### Predict AQI
-```bash
-curl.exe -X POST "http://localhost:5051/predict?location_id=1"
+consumer.py
 ```
 
 ---
 
-## Scheduled Pipeline
+# API Service
 
-DAG: `urban_air_quality_phase5_pipeline`
+Provides REST endpoints to access stored data.
 
-Schedule: every 3 hours (`0 */3 * * *`)
+Built using **FastAPI**.
 
-Pipeline order:
-1. Ingest
-2. Retention cleanup
-3. Aggregation
-4. ML train
-5. ML predict
+Example endpoints:
 
----
+```
+GET /health
+GET /aqi/latest
+GET /aqi/history
+GET /weather
+GET /dashboard
+```
 
-## Data Retention
-
-Retention is automatic.
-
-- Window: last 7 days
-- Cleanup endpoint: `POST /retention`
-- Old rows are deleted from:
-    - `aqi_measurements`
-    - `weather_measurements`
-    - `traffic_data`
-    - `raw_aqi_data`
-    - `raw_weather_data`
+The API is used by the **frontend dashboard**.
 
 ---
 
-## Key API Endpoints
+# Frontend Dashboard
 
-### API Service (`:8000`)
-- `GET /aqi/latest?city=Bangalore`
-- `GET /aqi/history?city=Bangalore&limit=50&offset=0`
-- `GET /dashboard/predictions?city=Bangalore&limit=24`
-- `GET /dashboard/hourly?city=Bangalore&limit=168`
-- `GET /dashboard/daily?city=Bangalore&limit=30`
-- `GET /dashboard/anomalies?city=Bangalore&limit=50`
-- `GET /dashboard/correlation?city=Bangalore`
+A **React-based dashboard** for visualizing air quality metrics.
 
-### Ingestion Service (`:5050`)
-- `POST /ingest`
-- `POST /seed`
-- `POST /aggregate`
-- `POST /retention`
-- `GET /health`
+Features:
 
-### ML Service (`:5051`)
-- `POST /train?location_id=1&days=7`
-- `POST /predict?location_id=1`
-- `GET /health`
+* AQI charts
+* Weather indicators
+* Pollution trends
+* Interactive metric cards
+
+Tech stack:
+
+* React
+* Vite
+* TailwindCSS
 
 ---
 
-## Database Tables
+# ML Service
 
-Primary tables:
-- `locations`
-- `aqi_measurements`
-- `weather_measurements`
-- `traffic_data`
-- `raw_aqi_data`
-- `raw_weather_data`
-- `hourly_aggregates`
-- `daily_aggregates`
-- `correlation_metrics`
-- `anomaly_events`
-- `aqi_predictions`
+Provides **machine learning capabilities** for AQI prediction.
 
----
+Functions include:
 
-## Frontend Highlights
+* Feature engineering
+* Model training
+* AQI prediction API
 
-React dashboard features:
-- Real-time AQI metrics
-- ML prediction highlight card
-- Prediction trend chart
-- Hourly AQI trend chart
-- Daily + rolling-7-day chart
-- Correlation metrics panel
-- Anomaly events panel
-- Auto refresh every 30 seconds
+Key files:
+
+```
+train.py
+predict.py
+feature_engineering.py
+```
+
+Models are trained using historical air quality and weather data.
 
 ---
 
-## Troubleshooting
+# Airflow Orchestration
 
-### Dashboard loads but no data
-1. Ensure API is running: `docker ps`
-2. Test API: `curl.exe "http://localhost:8000/aqi/latest?city=Bangalore"`
-3. Hard refresh browser (`Ctrl+Shift+R`)
+Apache Airflow manages scheduled workflows.
 
-### No predictions visible
-1. Run train endpoint
-2. Run predict endpoint
-3. Check DB table `aqi_predictions`
+DAGs included:
 
-### Airflow DAG missing
-1. Check container logs: `docker logs airflow_webserver`
-2. Confirm DAG exists in `services/airflow/dags/`
+### `urban_air_quality_hourly.py`
+
+Runs the **hourly data pipeline**.
+
+Pipeline tasks:
+
+1. Trigger ingestion
+2. Stream data to Kafka
+3. Process with consumer
+4. Update database
 
 ---
 
-## Development Commands
+### `model_training_manual.py`
 
-```bash
-# Rebuild specific services
-docker-compose up -d --build api_service dashboard ml_service ingestion_service
+Manual workflow for:
 
-# View logs
-docker logs air_dashboard
-docker logs air_api
-docker logs air_ingestion
-docker logs air_ml
+* Training ML models
+* Updating prediction models
 
-# Stop all
-docker-compose down
+---
 
-# Stop all + remove volumes (fresh reset)
-docker-compose down -v
+# Database Schema
+
+The PostgreSQL database stores:
+
+### AQI Measurements
+
+Includes:
+
+* timestamp
+* location
+* PM2.5
+* PM10
+* NO₂
+* CO
+* O₃
+
+### Weather Data
+
+Includes:
+
+* temperature
+* humidity
+* wind speed
+* pressure
+
+### Traffic Data
+
+Includes:
+
+* congestion metrics
+* traffic density
+
+Database initialization scripts:
+
+```
+infrastructure/postgres/init.sql
+infrastructure/postgres/roles.sql
 ```
 
 ---
 
-## Notes
+# How to Run the Project
 
-- `services/dashboard/` (old Streamlit app) was retired and replaced by `services/frontend/`.
-- Python cache files (`__pycache__`, `*.pyc`) are safe to delete and ignored via `.gitignore`.
-- For Windows PowerShell, always prefer `curl.exe`.
+## 1 Clone Repository
+
+```
+git clone https://github.com/Ailurophile47/air-quality.git
+cd air-quality
+```
+
+---
+
+# 2 Configure Environment Variables
+
+Create `.env` file if needed.
+
+Example variables:
+
+```
+POSTGRES_DB=airquality
+POSTGRES_USER=airuser
+POSTGRES_PASSWORD=airpassword
+
+KAFKA_BROKER=kafka:9092
+```
+
+---
+
+# 3 Start the Platform
+
+Run all services using Docker:
+
+```
+docker compose up --build
+```
+
+This will start:
+
+* PostgreSQL
+* Kafka
+* Airflow
+* Ingestion Service
+* Kafka Consumer
+* API Service
+* ML Service
+* Frontend Dashboard
+
+---
+
+# 4 Access Services
+
+| Service            | URL                                                      |
+| ------------------ | -------------------------------------------------------- |
+| Frontend Dashboard | [http://localhost:5173](http://localhost:3000)           |
+| API Docs           | [http://localhost:8000/docs](http://localhost:8000/docs) |
+| Airflow UI         | [http://localhost:8080](http://localhost:8080)           |
+
+Default Airflow login:
+
+```
+username: airflow
+password: airflow
+```
+
+---
+
+# Example API Response
+
+```
+GET /aqi/latest
+```
+
+Response:
+
+```json
+{
+  "timestamp": "2026-03-01T10:00:00",
+  "pm25": 42,
+  "pm10": 60,
+  "no2": 25,
+  "temperature": 27,
+  "humidity": 65
+}
+```
+
+---
+
+# Data Pipeline Flow
+
+```
+1. External APIs
+2. Ingestion Service
+3. Kafka Producer
+4. Kafka Topic
+5. Kafka Consumer
+6. PostgreSQL Storage
+7. API Service
+8. Frontend Dashboard
+9. ML Prediction Service
+```
+
+---
+
+# Future Improvements
+
+Potential upgrades for the platform:
+
+* Real-time streaming dashboards
+* AQI prediction using deep learning
+* Historical data lake storage
+* Kubernetes deployment
+* Data quality monitoring
+* Grafana + Prometheus monitoring
+
+---
+
+# Learning Outcomes
+
+This project demonstrates knowledge of:
+
+* Data Engineering architecture
+* Kafka streaming pipelines
+* Airflow workflow orchestration
+* Microservice design
+* API development
+* ML integration into pipelines
+* Docker-based infrastructure
+
+---
+
