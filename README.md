@@ -1,7 +1,3 @@
-Below is a **clean, professional, copy-paste ready `README.md`** tailored to **your exact project structure and services**.
-It emphasizes **objectives, architecture, setup, services, and pipeline flow**, which recruiters usually look for in **data engineering portfolios**.
-
-You can **paste this directly into `README.md`**.
 
 ---
 
