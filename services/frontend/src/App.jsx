@@ -101,6 +101,29 @@ function App() {
 
         {!loading && (
           <>
+            {/* Predictions Highlight - Center Stage */}
+            {nextPred && (
+              <div className="mb-8 p-8 bg-gradient-to-r from-purple-900/80 via-purple-800/80 to-blue-900/80 rounded-2xl border-2 border-purple-500/50 shadow-2xl animate-pulse">
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-purple-300 uppercase tracking-widest mb-2">🔮 AI Prediction</p>
+                  <h2 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-blue-300 to-cyan-300 mb-3">
+                    {Math.round(nextPred.predicted_aqi)}
+                  </h2>
+                  <p className="text-lg text-purple-200 mb-4">
+                    Predicted AQI for {new Date(nextPred.predicted_at).toLocaleString()}
+                  </p>
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="inline-block px-4 py-2 bg-purple-600/50 rounded-lg border border-purple-400">
+                      <p className="text-sm text-purple-200">Model: {nextPred.model_version}</p>
+                    </div>
+                    <div className="inline-block px-4 py-2 bg-blue-600/50 rounded-lg border border-blue-400">
+                      <p className="text-sm text-blue-200">Confidence: Ridge Regression</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Primary Metrics Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <MetricCard
@@ -135,7 +158,38 @@ function App() {
             </div>
 
             {/* Charts Row 1 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+              {/* Predictions Forecast */}
+              <ChartContainer title="🔮 AQI Predictions (Next 24h)" subtitle="ML forecast trend">
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={predictions.slice(0, 6)}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis 
+                      dataKey="predicted_at" 
+                      stroke="#94a3b8" 
+                      tick={{ fontSize: 11 }}
+                      tickFormatter={(val) => new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    />
+                    <YAxis stroke="#94a3b8" tick={{ fontSize: 12 }} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569' }}
+                      formatter={(value) => [Math.round(value), 'Predicted AQI']}
+                      labelFormatter={(val) => new Date(val).toLocaleString()}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="predicted_aqi"
+                      stroke="#a855f7"
+                      strokeWidth={3}
+                      dot={{ fill: '#a855f7', r: 5 }}
+                      activeDot={{ r: 7 }}
+                      name="Forecast"
+                      isAnimationActive
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+
               {/* Hourly Trend */}
               <ChartContainer title="AQI Trend (72h)" subtitle="Hourly measurements">
                 <ResponsiveContainer width="100%" height={300}>
