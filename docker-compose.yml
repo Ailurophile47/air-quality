@@ -31,6 +31,13 @@ services:
     depends_on:
       - kafka
       - postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: airquality
+      POSTGRES_USER: airuser
+      POSTGRES_PASSWORD: airpass
     networks:
       - air_network
 
@@ -71,6 +78,39 @@ services:
       - postgres
     env_file:
       - .env
+    ports:
+      - "5050:5050"
+    networks:
+      - air_network
+
+  ml_service:
+    build: ./services/ml_service
+    container_name: air_ml
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: airquality
+      POSTGRES_USER: airuser
+      POSTGRES_PASSWORD: airpass
+    volumes:
+      - ml_models:/app/models
+    ports:
+      - "5051:5051"
+    networks:
+      - air_network
+
+  dashboard:
+    build: ./services/frontend
+    container_name: air_dashboard
+    depends_on:
+      - api_service
+    environment:
+      VITE_API_BASE: http://api_service:8000
+    ports:
+      - "3000:3000"
     networks:
       - air_network
 
@@ -103,6 +143,8 @@ services:
     restart: always
     depends_on:
       - airflow-webserver
+      - ingestion_service
+      - ml_service
     env_file:
       - .env
     environment:
@@ -119,6 +161,7 @@ services:
 
 volumes:
   postgres_data:
+  ml_models:
 
 networks:
   air_network:

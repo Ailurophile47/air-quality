@@ -43,7 +43,44 @@ def insert_structured_aqi(location_id, data):
                 data["dominant_pollutant"],
                 data["recorded_at"]
             ))
-            conn.commit() 
+            conn.commit()
+
+
+def insert_structured_weather(location_id, data):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO weather_measurements
+                (location_id, temperature, humidity, wind_speed, pressure, visibility, recorded_at)
+                VALUES (%s,%s,%s,%s,%s,%s,%s)
+                ON CONFLICT (location_id, recorded_at) DO NOTHING
+            """, (
+                location_id,
+                data["temperature"],
+                data["humidity"],
+                data["wind_speed"],
+                data["pressure"],
+                data.get("visibility"),
+                data["recorded_at"]
+            ))
+            conn.commit()
+
+
+def insert_traffic(location_id, city, data):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO traffic_data (location_id, city, recorded_at, vehicle_count, congestion_index, avg_speed)
+                VALUES (%s,%s,%s,%s,%s,%s)
+            """, (
+                location_id,
+                city,
+                data["recorded_at"],
+                data["vehicle_count"],
+                data["congestion_index"],
+                data["avg_speed"]
+            ))
+            conn.commit()
 
 def get_or_create_location(city, lat, lon, country):
     with get_connection() as conn:

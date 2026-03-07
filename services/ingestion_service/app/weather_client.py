@@ -1,16 +1,30 @@
+"""Weather data client for Bengaluru. Returns raw JSON for pipeline integration."""
 import requests
 import logging
+from tenacity import retry, stop_after_attempt, wait_exponential
 
-def fetch_weather(city, api_key):
+LAT, LON = 12.9716, 77.5946  # Bengaluru coordinates (aligned with AQI/traffic)
+
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+)
+def fetch_weather(api_key: str) -> dict:
+    """Fetch weather from OpenWeatherMap. Returns raw API response."""
     url = (
-        f"https://api.openweathermap.org/data/2.5/weather"
-        f"?q={city}&appid={api_key}&units=metric"
+        f"http://api.openweathermap.org/data/2.5/weather"
+        f"?lat={LAT}&lon={LON}&appid={api_key}&units=metric"
     )
-
     response = requests.get(url, timeout=10)
-
-    if response.status_code != 200:
-        logging.error("Weather API failure")
-        raise Exception("Weather API error")
-
+    response.raise_for_status()
     return response.json()
+
+
+if __name__ == "__main__":
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    key = os.getenv("WEATHER_API_KEY")
+    if key:
+        print(fetch_weather(key))

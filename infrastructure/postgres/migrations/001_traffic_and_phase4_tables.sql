@@ -1,64 +1,8 @@
--- Airflow metadata database (for Airflow scheduler/webserver)
-CREATE DATABASE airflow;
-CREATE USER airflow WITH PASSWORD 'airflow';
-GRANT ALL PRIVILEGES ON DATABASE airflow TO airflow;
+-- Migration 001: Create traffic_data and Phase 4 tables on existing databases
+-- Run this when Postgres was initialized before these tables were added (e.g. "Skipping initialization").
+-- Usage: docker exec -i air_postgres psql -U airuser -d airquality < infrastructure/postgres/migrations/001_traffic_and_phase4_tables.sql
 
--- Application tables (in default/airquality database)
-CREATE TABLE locations (
-    id SERIAL PRIMARY KEY,
-    city_name VARCHAR(100) NOT NULL,
-    latitude DOUBLE PRECISION NOT NULL,
-    longitude DOUBLE PRECISION NOT NULL,
-    country VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE UNIQUE INDEX idx_location_unique 
-ON locations(city_name);
-
-CREATE TABLE raw_aqi_data (
-    id SERIAL PRIMARY KEY,
-    location_id INT REFERENCES locations(id),
-    raw_payload JSONB NOT NULL,
-    ingestion_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE raw_weather_data (
-    id SERIAL PRIMARY KEY,
-    location_id INT REFERENCES locations(id),
-    raw_payload JSONB NOT NULL,
-    ingestion_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE aqi_measurements (
-    id SERIAL PRIMARY KEY,
-    location_id INT REFERENCES locations(id),
-    aqi_value INT CHECK (aqi_value >= 0),
-    pm2_5 DOUBLE PRECISION,
-    pm10 DOUBLE PRECISION,
-    no2 DOUBLE PRECISION,
-    o3 DOUBLE PRECISION,
-    co DOUBLE PRECISION,
-    dominant_pollutant VARCHAR(50),
-    recorded_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_aqi_recorded_at ON aqi_measurements(recorded_at);
-CREATE INDEX idx_aqi_loc_time ON aqi_measurements(location_id, recorded_at);
-
-CREATE TABLE weather_measurements (
-    id SERIAL PRIMARY KEY,
-    location_id INT REFERENCES locations(id),
-    temperature DOUBLE PRECISION,
-    humidity DOUBLE PRECISION,
-    wind_speed DOUBLE PRECISION,
-    pressure DOUBLE PRECISION,
-    visibility DOUBLE PRECISION,
-    recorded_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
+-- 1. traffic_data (required for batch ingestion and retention)
 CREATE TABLE IF NOT EXISTS traffic_data (
     id SERIAL PRIMARY KEY,
     location_id INT REFERENCES locations(id),
@@ -72,18 +16,16 @@ CREATE TABLE IF NOT EXISTS traffic_data (
 CREATE INDEX IF NOT EXISTS idx_traffic_recorded_at ON traffic_data(recorded_at);
 CREATE INDEX IF NOT EXISTS idx_traffic_location_time ON traffic_data(location_id, recorded_at);
 
--- Migration: add location_id to existing traffic_data (no-op if already present)
+-- Add location_id to traffic_data if table existed without it
 DO $$
 BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns
-        WHERE table_name = 'traffic_data' AND column_name = 'location_id'
-    ) THEN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'traffic_data')
+       AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'traffic_data' AND column_name = 'location_id') THEN
         ALTER TABLE traffic_data ADD COLUMN location_id INT REFERENCES locations(id);
     END IF;
 END $$;
 
--- Phase 4: Aggregation and metrics tables
+-- 2. Phase 4 aggregation tables
 CREATE TABLE IF NOT EXISTS hourly_aggregates (
     id SERIAL PRIMARY KEY,
     location_id INT REFERENCES locations(id),
@@ -131,7 +73,7 @@ CREATE TABLE IF NOT EXISTS anomaly_events (
 
 CREATE INDEX IF NOT EXISTS idx_anomaly_recorded_at ON anomaly_events(recorded_at);
 
--- Phase 5: AQI predictions (ML model output)
+-- Phase 5: AQI predictions
 CREATE TABLE IF NOT EXISTS aqi_predictions (
     id SERIAL PRIMARY KEY,
     location_id INT REFERENCES locations(id),
@@ -143,14 +85,3 @@ CREATE TABLE IF NOT EXISTS aqi_predictions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_aqi_predictions_predicted_at ON aqi_predictions(predicted_at);
-
-CREATE INDEX idx_weather_recorded_at 
-ON weather_measurements(recorded_at);
-ALTER TABLE aqi_measurements
-ADD CONSTRAINT unique_aqi_record
-UNIQUE (location_id, recorded_at);
-
-ALTER TABLE weather_measurements
-ADD CONSTRAINT unique_weather_record
-UNIQUE (location_id, recorded_at);
-
